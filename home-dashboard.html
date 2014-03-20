@@ -2,20 +2,20 @@
 	<title></title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
 	<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
-	<script type="text/javascript" src="//api.filepicker.io/v1/filepicker.js"></script>
-	<script>
-		console.log(Meteor.settings);
-		console.log("Setting up filepicker.io...");
-		if (((typeof filepicker !== "undefined" && filepicker !== null ? filepicker.setKey : void 0) != null) && (((_ref = Meteor.settings["public"].filepicker) != null ? _ref.key : void 0) != null)) {
-			console.log("Setting filepicker.io key to " + Meteor.settings["public"].filepicker.key);
-			filepicker.setKey(Meteor.settings["public"].filepicker.key);
-			upsertGlobal('filepickerApiKey', Meteor.settings["public"].filepicker.key);
-		}
-	</script>
 </head>
 
 <body>
 	{{> body}}
+	<script>
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	  ga('create', 'UA-49199063-1', 'automeme.co');
+	  ga('send', 'pageview');
+
+	</script>
 </body>
 
 <template name="header">
@@ -38,7 +38,6 @@
 	{{> header}}
 	{{#if messagesReady}}
 		{{> messages}}
-		<div class="loading">Loading messages...</div>
 	{{/if}}
 	<section id="footer">
 		<img src="/fortress.png" width="64px">
@@ -82,11 +81,11 @@
 
 <template name="send-message">
 	<form onsubmit="event.preventDefault();">
-		<input type="text" name="new-message"></input>
+		<input type="text" name="new-message" placeholder="Do you even meme?"></input>
 		{{#if filepickerEnabled}}
 			<button id="btn-file-picker" onclick="javascript:pickFile()">Pick a file</button>
 		{{/if}}
-		<button name="send">Send</button>
+		<button name="send">Meme</button>
 	</form>
 </template>
 

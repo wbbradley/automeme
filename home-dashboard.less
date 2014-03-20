@@ -320,6 +320,7 @@ h3 {
 body > header {
 	.box;
 	.media-padding;
+	margin: 0 auto;
 	position: fixed;
 	background-color: darkgray;
 	background-size: cover; 
@@ -385,9 +386,11 @@ button {
 input {
 	@media @not-iphone {
 		.body-font(16px);
+		width: 625px;
 	}
 	@media @iphone {
 		.body-font(14px);
+		width: 225px;
 	}
 	border: 1px solid @border-col;
 	border-radius: 0;
@@ -429,6 +432,7 @@ body > section {
 	background: @bright-white;
 	.media-max-width;
 	overflow: hidden;
+	margin: 0 auto;
 
 	&#send-message {
 		form {

@@ -14,14 +14,13 @@ console.log "Starting home-dashboard..."
     domain: "gmail.com"
     sendBroadcastEmail: false
     admins: [
-      'williambbradley@gmail.com'
     ]
     whitelist:
       emails: []
       twitter: ['wbbradley']
   public:
-    title: "Home Dashboard"
-    server: "http://localhost:3000/"
+    title: "automeme"
+    server: "http://automeme.co/"
     karma: true
     pageSize: 10
 
@@ -580,10 +579,6 @@ if Meteor.isServer
 
   Meteor.settings = _.defaults Meteor.settings, default_settings
 
-  check [Meteor.settings.private.admins[0]], [String]
-  @adminEmail = ->
-    Meteor.settings.private.admins[0]
-
   @initWhitelist = ->
     # Sort the whitelists
     for list_name of Meteor.settings.private.whitelist
@@ -603,9 +598,9 @@ if Meteor.isServer
       insert: (userId, doc) ->
         return true
       update: (userId, doc, fieldNames, modifier) ->
-        return doc.authorId is get_user()._id
+        return true
       remove: (userId, doc) ->
-        return doc.authorId is get_user()._id
+        return true
 
   for name, collection of subscribeList
     publishCollection name, collection
