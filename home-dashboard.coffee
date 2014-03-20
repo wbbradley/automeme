@@ -575,23 +575,28 @@ if Meteor.isServer
       return
 
     search: (searchString, user_id, room_id) ->
-      url = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=#{encodeURIComponent(searchString)}"
+      url = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&as_filetype=gif&q=#{encodeURIComponent(searchString)}"
       Meteor.http.get url, (error, result) ->
-        console.dir error
-        results = (JSON.parse result.content).responseData.results
-        item = results[Math.floor(Math.random() * results.length)]
-        words = searchString.split ' '
-        half = Math.floor(words.length / 2)
-        title = words.slice(0, half).join(' ')
-        subTitle = words.slice(half).join(' ')
-        Messages.insert
-          imageUrl: item.unescapedUrl
-          timestamp: Date.now()
-          authorId: user_id
-          roomId: room_id
-          meme: true
-          memeTitle: title
-          memeSubtitle: subTitle
+        if error?
+          console.dir error
+        if result?.content?
+          results = (JSON.parse result.content)?.responseData?.results
+          if results
+            console.dir results
+            item = results[Math.floor(Math.random() * results.length)]
+            if item?.unescapedUrl?
+              words = searchString.split ' '
+              half = Math.floor(words.length / 2)
+              title = words.slice(0, half).join(' ')
+              subTitle = words.slice(half).join(' ')
+              Messages.insert
+                imageUrl: item.unescapedUrl
+                timestamp: Date.now()
+                authorId: user_id
+                roomId: room_id
+                meme: true
+                memeTitle: title
+                memeSubtitle: subTitle
 
   Meteor.settings = _.defaults Meteor.settings, default_settings
 

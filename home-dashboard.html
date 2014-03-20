@@ -19,7 +19,7 @@
 </body>
 
 <template name="header">
-<header style="background-image: url({{background}})">
+	<header style="background-image: url({{background}})">
 		{{#if messagesReady}}
 			<section id="send-message">
 				{{> send-message}}
@@ -81,7 +81,7 @@
 
 <template name="send-message">
 	<form onsubmit="event.preventDefault();">
-		<input type="text" name="new-message" placeholder="Do you even meme?"></input>
+		<input id="new-message-input" type="text" name="new-message" placeholder="Enter some text here, and I will create an automeme for you..."></input>
 		{{#if filepickerEnabled}}
 			<button id="btn-file-picker" onclick="javascript:pickFile()">Pick a file</button>
 		{{/if}}
