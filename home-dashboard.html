@@ -1,6 +1,7 @@
 <head>
 	<title></title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
+	<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
 	<script type="text/javascript" src="//api.filepicker.io/v1/filepicker.js"></script>
 	<script>
 		console.log(Meteor.settings);
@@ -18,21 +19,16 @@
 </body>
 
 <template name="header">
-	<header style="background-image: url({{background}})">
+<header style="background-image: url({{background}})">
 		{{#if messagesReady}}
 			<section id="send-message">
 				{{> send-message}}
 			</section>
 		{{ else }}
 			<h1>{{settings.title}} {{roomName}}</h1>
-			<div class="login-tools">
-				{{loginButtons}}
-			</div>
-			{{#if currentUser}}
-				{{#with karma}}
-					<span class="karma">You have {{ points }} heart point(s).</span>
-				{{/with}}
-			{{/if}}
+			{{#with karma}}
+				<span class="karma">You have {{ points }} heart point(s).</span>
+			{{/with}}
 			<div class="clearfix"></div>
 		{{/if}}
 	</header>
@@ -42,20 +38,7 @@
 	{{> header}}
 	{{#if messagesReady}}
 		{{> messages}}
-	{{else}}
-		{{#if loggingIn}}
-			{{#if currentUser}}
-				Logging in...
-			{{else}}
-				Please stand by and await further instructions.
-			{{/if}}
-		{{else}}
-			{{#if currentUser}}
-				<div class="loading">Loading messages...</div>
-			{{else}}
-				You are not logged in.
-			{{/if}}
-		{{/if}}
+		<div class="loading">Loading messages...</div>
 	{{/if}}
 	<section id="footer">
 		<img src="/fortress.png" width="64px">
@@ -72,9 +55,7 @@
 </template>
 
 <template name="currentUserImage">
-{{#if currentUser}}
-	<div class="author" style="background-image:url({{{imageUrl}}})"></div>
-{{/if}}
+	<div class="author"></div>
 </template>
 
 <template name="messages">
@@ -100,7 +81,6 @@
 </template>
 
 <template name="send-message">
-{{#if currentUser}}
 	<form onsubmit="event.preventDefault();">
 		<input type="text" name="new-message"></input>
 		{{#if filepickerEnabled}}
@@ -108,7 +88,6 @@
 		{{/if}}
 		<button name="send">Send</button>
 	</form>
-{{/if}}
 </template>
 
 <template name="memificator">
@@ -140,25 +119,13 @@
 <template name="message">
 <div class="message" id="message-{{_id}}">
 	<header>
-		{{#withAuthor authorId}}
-		<div class="author" title="{{name}}" style="background-image:url({{image}})"></div>
-		<span class="name">{{name}}</span>
-		{{/withAuthor}}
 		{{link-render}}
 		<nav>
 			{{#if ownerOrAdmin}}
-				{{#if imageUrl}}
-					{{#if meme}}
-					{{else}}
-					<button class="meme-btn">
-						<i class="icon-text-width"></i>
-					</button>
-					{{/if}}
-				{{/if}}
-				<button class="delete-btn"><i class="icon-trash"></i></button>
+				<button class="delete-btn"><i class="fa fa-trash-o"></i></button>
 			{{/if}}
 			{{#if lovable}}
-				<button class="love-btn"><i class="icon-heart"></i></button>
+				<button class="love-btn"><i class="fa fa-heart"></i></button>
 			{{/if}}
 		</nav>
 	</header>
@@ -181,7 +148,7 @@
 	{{/if}}
 	<div class="comments">
 		{{#loveLoop this}}
-			<i class="icon-heart"></i>
+			<i class="fa fa-heart"></i>
 			{{/loveLoop}}
 		{{#if comments}}
 			{{#each comments}}
@@ -190,15 +157,15 @@
 	</div>
 	{{#each comments}}
 	<div class="comment">
-		<div class="author" style="background-image: url({{ getAuthorImage authorId }})"></div>
-		<div class="name">{{getAuthorName authorId}}</div>
+		<div class="author"></div>
+		<div class="name"></div>
 		<div class="text">{{text}}</div>
 	</div>
 	{{/each}}
 	<nav class="comment">
 		{{> currentUserImage }}
 		<nav>
-			<button class="comment-btn"><i class="icon-comment-alt"></i></button>
+			<button class="comment-btn"><i class="fa fa-comment-o"></i></button>
 		</nav>
 		<input type="text" name="text">
 	</nav>

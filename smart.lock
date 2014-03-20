@@ -2,13 +2,19 @@
   "meteor": {},
   "dependencies": {
     "basePackages": {
-      "font-awesome": {}
+      "font-awesome": {},
+      "accounts-anonymous": {}
     },
     "packages": {
       "font-awesome": {
         "git": "https://github.com/nate-strauser/meteor-font-awesome.git",
-        "tag": "v3.2.1",
-        "commit": "38bdfff72dfb8857b272f9a9b056045d6a015489"
+        "tag": "v4.0.3",
+        "commit": "61e9361384347547ae144f8228faa4deffda23db"
+      },
+      "accounts-anonymous": {
+        "git": "https://github.com/culshaw/meteor-accounts-anonymous.git",
+        "tag": "v0.0.2",
+        "commit": "1daf8961ae461ec370d3ce841f9e78b828aa1aec"
       }
     }
   }

@@ -1,5 +1,14 @@
 console.log "Starting home-dashboard..."
 
+@get_user = () ->
+  user = Session.get('user')
+  if not user
+    user =
+      _id: Math.random().toString()
+    Session.set 'user', user
+
+  return user
+
 @default_settings =
   private:
     domain: "gmail.com"
@@ -30,7 +39,6 @@ WeatherReports = new Meteor.Collection 'weather_reports'
 Globals = new Meteor.Collection 'globals'
 
 subscribeList =
-  'users': Meteor.users
   'messages': Messages
   'beers': Beers
   'comments': Comments
@@ -84,6 +92,10 @@ userEmailAddress = (user) ->
 
 ##################################################################
 if Meteor.isClient
+  if not Session.get('user')
+    Session.set 'user',
+      _id: Math.random().toString()
+
   Meteor.settings = Meteor.settings or {}
   Meteor.settings.public = _.defaults Meteor.settings.public or {}, default_settings.public
 
@@ -181,16 +193,13 @@ if Meteor.isClient
       formatDate(timestamp)
 
   Template.message.ownerOrAdmin = ->
-    userId = Meteor.user()?._id
+    userId = get_user()._id
     return userId is @authorId or isAdminUser userId
 
   Template.message.lovable = ->
-    userId = Meteor.user()?._id
+    userId = get_user()._id
     userLoveIds = @userLoveIds or []
     return @authorId isnt userId and userLoveIds.indexOf(userId) is -1
-
-  Template.message.author = ->
-    Meteor.users.findOne {_id:@authorId}
 
   Template.message.comments = ->
     Comments.find {msgId: @_id}, {sort: {timestamp: 1}}
@@ -202,7 +211,7 @@ if Meteor.isClient
     Comments.insert
       text: text
       msgId: message._id
-      authorId: Meteor.user()._id
+      authorId: get_user()._id
       timestamp: Date.now()
 
   Template.message.events
@@ -221,52 +230,27 @@ if Meteor.isClient
     'click .comment-btn': () ->
       addComment @_id
     'click .love-btn': () ->
-      if Meteor.user()?._id?
-        log 'info', "#{Meteor.user().profile.name} liked a post"
+      if get_user()._id?
         Messages.update {_id: @_id},
-          $addToSet: {userLoveIds: Meteor.user()._id}
+          $addToSet: {userLoveIds: get_user()._id}
 
   @getUserImage = (authorId) ->
-    author = Meteor.users.findOne {_id:authorId}
-    unknown = "http://b.vimeocdn.com/ps/346/445/3464459_300.jpg"
-    if author
-      if author.image
-        return author.image
-      if author.services?
-        if author.services.twitter
-          return author.services.twitter.profile_image_url.replace('_normal', '') or unknown
-        else if author.services.google
-          return author.services.google.picture or unknown
-        else if author.services.facebook
-          return "http://graph.facebook.com/#{author.services.facebook.id}/picture?type=large"
-      email = userEmailAddress author
-      if email
-        return "http://www.gravatar.com/avatar/#{md5(email.toLowerCase())}?s=150"
-    return unknown
-
-  @getUserName = (authorId) ->
-    author = Meteor.users.findOne {_id:authorId}
-    return author.profile.name or 'Unknown'
+    return "http://b.vimeocdn.com/ps/346/445/3464459_300.jpg"
 
   @isAdminUser = (userId) ->
-    user = Meteor.users.findOne {_id:userId}
-    user.isAdmin
+    return false
 
   Template.message.helpers
-    withAuthor: (userId, options) ->
-      author = Meteor.users.findOne {_id: userId}, {sort: {timestamp: -1}}
-      authorContext =
-        name: author.profile.name
-        image: getUserImage userId
-      return options.fn authorContext
     ifNotLoved: (context, options) ->
       userLoveIds = @['userLoveIds'] or []
-      if userLoveIds.indexOf(Meteor.user()._id) is -1
+      if userLoveIds.indexOf(get_user()._id) is -1
         return options.fn @
       else
         return options.inverse @
     ifOwner: (context, options) ->
-      userId = Meteor.user()?._id
+      console.dir get_user()
+      console.dir @
+      userId = get_user()._id
       if userId is @authorId or isAdminUser userId
         return options.fn @
       else
@@ -281,12 +265,6 @@ if Meteor.isClient
         return ret
       else
         return options.inverse @
-
-    getAuthorImage: (authorId) ->
-      getUserImage authorId
-
-    getAuthorName: (authorId) ->
-      getUserName authorId
 
     say: (msg) ->
       # $.say msg
@@ -344,12 +322,6 @@ if Meteor.isClient
 
   Template.messages.olderMessagesExist = ->
     Template.messages.messageCount > Session.get('pageSize') + Session.get('skipAhead')
-
-  Template.currentUserImage.imageUrl = ->
-    if Meteor.user()
-      getUserImage Meteor.user()._id
-    else
-      ''
 
   Template.body.roomName = ->
     room = Rooms.findOne {}, {sort: {timestamp: -1}}
@@ -416,10 +388,10 @@ if Meteor.isClient
     if item
       if item.roomId is currentRoom._id
         if typeof item.holderId isnt 'string'
-          if item.creatorId isnt Meteor.user()._id
+          if item.creatorId isnt get_user()._id
             Items.update {_id: item._id},
               $set:
-                holderId: Meteor.user()._id
+                holderId: get_user()._id
                 roomId: null
           else
             window.alert "You cannot hold your own creations."
@@ -434,7 +406,7 @@ if Meteor.isClient
     room or= currentRoom()
     item = findItem itemName
     if item
-      if item.holderId is Meteor.user()._id
+      if item.holderId is get_user()._id
         Items.update {_id: item._id},
           $set:
             holderId: null
@@ -447,7 +419,7 @@ if Meteor.isClient
         lcname: itemName.toLowerCase()
         timestamp: Date.now()
         roomId: room._id
-        creatorId: Meteor.user()._id
+        creatorId: get_user()._id
         holderId: null
 
   @addImageByUrl = (imageUrl) ->
@@ -455,7 +427,7 @@ if Meteor.isClient
       Messages.insert
         imageUrl: imageUrl
         timestamp: Date.now()
-        authorId: Meteor.user()._id
+        authorId: get_user()._id
         roomId: currentRoom()._id
       goToFirstPage()
 
@@ -464,12 +436,12 @@ if Meteor.isClient
     if count > 0
       Beers.insert
         timestamp: Date.now()
-        userId: Meteor.user()._id
+        userId: get_user()._id
 
 
   @search = (search) ->
     searchString = search
-    Meteor.call 'search', search, Meteor.user()._id, currentRoom()._id
+    Meteor.call 'search', search, get_user()._id, currentRoom()._id
 
 
   @addMemeByUrl = (imageUrl) ->
@@ -477,7 +449,7 @@ if Meteor.isClient
       Messages.insert
         imageUrl: imageUrl
         timestamp: Date.now()
-        authorId: Meteor.user()._id
+        authorId: get_user()._id
         roomId: currentRoom()._id
         meme: true
         memeTitle: 'title'
@@ -489,16 +461,9 @@ if Meteor.isClient
       Messages.insert
         youtube: encodeURIComponent youtube
         timestamp: Date.now()
-        authorId: Meteor.user()._id
+        authorId: get_user()._id
         roomId: currentRoom()._id
       goToFirstPage()
-
-  @inviteByEmail = (emailInvited) ->
-    Meteor.call 'inviteByEmail', emailInvited, Meteor.user()._id
-
-  @updateProfileImage = (imageUrl) ->
-    if /^http/.test imageUrl
-      Meteor.call 'updateProfileImage', imageUrl
 
   captureAndSendMessage = ->
     msg = $('input[name="new-message"]').val()
@@ -513,8 +478,6 @@ if Meteor.isClient
         image: addImageByUrl
         meme: addMemeByUrl
         youtube: addYouTubePlaylist
-        invite: inviteByEmail
-        face: updateProfileImage
         beers: hadBeers
         search: search
 
@@ -551,8 +514,8 @@ if Meteor.isClient
 
   karmaCalc = () ->
     points = 0
-    if Meteor.user()
-      userId = Meteor.user()._id
+    if get_user()
+      userId = get_user()._id
       findCriteria =
         authorId: userId
         deleted: $ne: true
@@ -597,7 +560,9 @@ if Meteor.isServer
 
   Meteor.methods
     search: (searchString, user_id, room_id) ->
-      Meteor.http.get "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=#{encodeURIComponent(searchString)}", (error, result) ->
+      url = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=#{encodeURIComponent(searchString)}"
+      Meteor.http.get url, (error, result) ->
+        console.dir error
         results = (JSON.parse result.content).responseData.results
         item = results[Math.floor(Math.random() * results.length)]
         words = searchString.split ' '
@@ -612,42 +577,6 @@ if Meteor.isServer
           meme: true
           memeTitle: title
           memeSubtitle: subTitle
-
-    inviteByEmail: (emailInvited, userId) ->
-      check [emailInvited, userId], [String]
-      user = Meteor.users.findOne userId
-      console.log "#{user.profile.name} is inviting #{emailInvited}"
-      invite = Invites.findOne {emailInvited: emailInvited}
-
-      if not invite
-        Invites.insert
-          emailInvited: emailInvited
-          fromUserId: userId
-        emailSender = userEmailAddress user or null
-        if emailSender
-          Email.send
-            to: emailInvited
-            from: emailSender
-            subject: "You've been invited to #{Meteor.settings.public.title}"
-            text: "Hello, #{user.profile.name} has invited you to check out #{Meteor.settings.public.server}"
-        email = emailInvited
-        console.log "Processing invited user '#{email}'"
-        addToEmailWhitelist(emailInvited)
-      else
-        console.log "Found an oustanding invite for #{emailInvited}"
-
-    sendEmail: (to, from, subject, text) ->
-      check([to, from, subject, text], [String])
-
-      # Let other method calls from the same client start running,
-      # without waiting for the email sending to complete.
-      @unblock()
-
-      Email.send
-        to: to
-        from: from
-        subject: subject
-        text: text
 
   Meteor.settings = _.defaults Meteor.settings, default_settings
 
@@ -666,98 +595,20 @@ if Meteor.isServer
   endsWith = (string, suffix) ->
       string.indexOf(suffix, string.length - suffix.length) isnt -1
 
-  if Meteor.settings.private?.admins?.indexOf?
-    Meteor.users.find().forEach (user) ->
-      email = userEmailAddress user
-      index = Meteor.settings.private.admins.indexOf email
-      isAdmin = index isnt -1
-      console.log "home-dashboard : info : setting '#{user.profile.name} (#{email})' isAdmin to #{isAdmin}"
-      Meteor.users.update {_id: user._id}, $set: isAdmin: index isnt -1
-
-  validUserByEmail = (user) ->
-    settings = Meteor.settings.private
-    email = userEmailAddress user
-    twitter = user?.services?.twitter?.screenName
-    if email
-      if endsWith email, "@#{Meteor.settings.private?.domain}"
-        return true
-      if _.indexOf(settings.whitelist.emails, email, true) isnt -1
-        return true
-    if twitter
-      if _.indexOf(settings.whitelist.twitter, twitter, true) isnt -1
-        return true
-
-    console.log "validUserByEmail : info : denied \"#{email or twitter}\""
-    return false
-
-  # Setup security features
-  Meteor.users.deny
-    update: () ->
-      return true
-
-  Meteor.methods
-    updateProfileImage: (image) ->
-      Meteor.users.update Meteor.userId(),
-        $set:
-          image: image
-
   publishCollection = (name, collection) ->
     Meteor.publish name, () ->
-      user = Meteor.users.findOne @userId
-      if user
-        console.log "Handling publish of #{name} to #{user.profile.name}"
-        if validUserByEmail user
-          return collection.find()
-      return undefined
+      return collection.find()
 
     collection.allow
       insert: (userId, doc) ->
-        return validUserByEmail Meteor.users.findOne userId
+        return true
       update: (userId, doc, fieldNames, modifier) ->
-        return validUserByEmail Meteor.users.findOne userId
+        return doc.authorId is get_user()._id
       remove: (userId, doc) ->
-        return validUserByEmail Meteor.users.findOne userId
+        return doc.authorId is get_user()._id
 
   for name, collection of subscribeList
     publishCollection name, collection
-
-  if Meteor.settings.private.sendBroadcastEmail
-    # Monitor for new messages and send appropriate emails
-    msgCursor = Messages.find({timestamp: {$gt: Date.now()}})
-    msgCursor.observe
-      added: (msg) ->
-        creator = Meteor.users.findOne {_id:msg.authorId}
-        Meteor.users.find().forEach (user) ->
-          email = userEmailAddress user
-          sender = adminEmail()
-          Email.send
-            to: email
-            from: adminEmail()
-            subject: "#{creator.profile.name} posted to #{Meteor.settings.public.title}"
-            text: "Check it out at #{Meteor.settings.public.server}#message-#{msg._id}"
-
-  commentCursor = Comments.find({timestamp: {$gt: Date.now()}})
-  commentCursor.observe
-    added: (comment) ->
-      console.dir comment
-      msg = Messages.findOne {_id:comment.msgId}
-      recipients = [msg.authorId]
-      Comments.find({msgId:msg._id}).forEach (earlierComment) ->
-        if earlierComment.authorId not in recipients
-          recipients.push earlierComment.authorId
-
-      originalAuthor = Meteor.users.findOne {_id:msg.authorId}
-      commentAuthor = Meteor.users.findOne {_id:comment.authorId}
-      sender = adminEmail()
-      for recipient in recipients
-        if comment.authorId isnt recipient
-          recipientUser = Meteor.users.findOne {_id:recipient}
-          email = userEmailAddress recipientUser
-          Email.send
-            to: email
-            from: adminEmail()
-            subject: "#{commentAuthor.profile.name} replied to a post you are in on #{Meteor.settings.public.title}"
-            text: "Check it out at #{Meteor.settings.public.server}#message-#{msg._id}"
 
   Accounts.validateNewUser (user) ->
     if validUserByEmail user
