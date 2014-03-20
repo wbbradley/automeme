@@ -207,11 +207,17 @@ if Meteor.isClient
     $input = $(el).closest('nav.comment').find('input[type=text]')
     text = $input.val()
     $input.val('')
-    Comments.insert
-      text: text
-      msgId: message._id
-      authorId: get_user()._id
-      timestamp: Date.now()
+    if text.length > 0
+      if text[0] is '/'
+        cmd = text.slice(1)
+
+        Meteor.call 'messageCmd', message._id, cmd
+      else
+        Comments.insert
+          text: text
+          msgId: message._id
+          authorId: get_user()._id
+          timestamp: Date.now()
 
   Template.message.events
     'click .delete-btn': () ->
@@ -558,6 +564,16 @@ if Meteor.isServer
     console.log "New whitelist is [#{privateSettings.whitelist.emails.join(', ')}]"
 
   Meteor.methods
+    messageCmd: (message_id, cmd) ->
+      console.log message_id
+      tokens = cmd.split(' ')
+      if tokens.length is 2
+        if tokens[0] is 'rm' and tokens[1] is Meteor.settings.private.password
+          Messages.update {_id: message_id},
+            $set: {deleted: true}
+
+      return
+
     search: (searchString, user_id, room_id) ->
       url = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=#{encodeURIComponent(searchString)}"
       Meteor.http.get url, (error, result) ->
@@ -592,7 +608,7 @@ if Meteor.isServer
 
   publishCollection = (name, collection) ->
     Meteor.publish name, () ->
-      return collection.find()
+      return collection.find '$or': [{'deleted': $exists: false}, {'deleted': false}]
 
     collection.allow
       insert: (userId, doc) ->
