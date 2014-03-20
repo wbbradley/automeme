@@ -1,0 +1,206 @@
+<head>
+	<title></title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
+	<script type="text/javascript" src="//api.filepicker.io/v1/filepicker.js"></script>
+	<script>
+		console.log(Meteor.settings);
+		console.log("Setting up filepicker.io...");
+		if (((typeof filepicker !== "undefined" && filepicker !== null ? filepicker.setKey : void 0) != null) && (((_ref = Meteor.settings["public"].filepicker) != null ? _ref.key : void 0) != null)) {
+			console.log("Setting filepicker.io key to " + Meteor.settings["public"].filepicker.key);
+			filepicker.setKey(Meteor.settings["public"].filepicker.key);
+			upsertGlobal('filepickerApiKey', Meteor.settings["public"].filepicker.key);
+		}
+	</script>
+</head>
+
+<body>
+	{{> body}}
+</body>
+
+<template name="header">
+	<header style="background-image: url({{background}})">
+		{{#if messagesReady}}
+			<section id="send-message">
+				{{> send-message}}
+			</section>
+		{{ else }}
+			<h1>{{settings.title}} {{roomName}}</h1>
+			<div class="login-tools">
+				{{loginButtons}}
+			</div>
+			{{#if currentUser}}
+				{{#with karma}}
+					<span class="karma">You have {{ points }} heart point(s).</span>
+				{{/with}}
+			{{/if}}
+			<div class="clearfix"></div>
+		{{/if}}
+	</header>
+</template>
+
+<template name="body">
+	{{> header}}
+	{{#if messagesReady}}
+		{{> messages}}
+	{{else}}
+		{{#if loggingIn}}
+			{{#if currentUser}}
+				Logging in...
+			{{else}}
+				Please stand by and await further instructions.
+			{{/if}}
+		{{else}}
+			{{#if currentUser}}
+				<div class="loading">Loading messages...</div>
+			{{else}}
+				You are not logged in.
+			{{/if}}
+		{{/if}}
+	{{/if}}
+	<section id="footer">
+		<img src="/fortress.png" width="64px">
+	</section>
+</template>
+
+<template name="weather-report">
+<div class="top-login-block">
+{{#with weather}}
+	{{weather.weather}} / {{feelslike_string}}
+{{/with}}
+<br/>
+</div>
+</template>
+
+<template name="currentUserImage">
+{{#if currentUser}}
+	<div class="author" style="background-image:url({{{imageUrl}}})"></div>
+{{/if}}
+</template>
+
+<template name="messages">
+{{#if messages}}
+	<section id="messages">
+		{{#if newerMessagesExist}}
+		<nav class="paging">
+			<button onclick="javascript:showNewerMessages()">Show newer messages</button>
+		</nav>
+		{{/if}}
+		{{#each messages}}
+			{{> message}}
+		{{/each}}
+		{{#if olderMessagesExist}}
+		<nav class="paging">
+			<button onclick="javascript:showOlderMessages()">Show older messages</button>
+		</nav>
+		{{/if}}
+	</section>
+{{else}}
+	No messages.
+{{/if}}
+</template>
+
+<template name="send-message">
+{{#if currentUser}}
+	<form onsubmit="event.preventDefault();">
+		<input type="text" name="new-message"></input>
+		{{#if filepickerEnabled}}
+			<button id="btn-file-picker" onclick="javascript:pickFile()">Pick a file</button>
+		{{/if}}
+		<button name="send">Send</button>
+	</form>
+{{/if}}
+</template>
+
+<template name="memificator">
+<div class="meme-container" style="background-image: url({{{imageUrl}}})">
+	<div class="inner">
+		<div class="top">
+			<span contenteditable data-msg-id="{{_id}}" id="meme-{{_id}}-title" class="title meme-text">{{{memeTitle}}}</span><br/>
+		</div>
+		<div class="bottom">
+			<span contenteditable data-msg-id="{{_id}}" id="meme-{{_id}}-subtitle" class="subtitle meme-text">{{{memeSubtitle}}}</span>
+		</div>
+	</div>
+</div>
+</template>
+
+<template name="memeDisplay">
+<div class="meme-container" style="background-image: url({{{imageUrl}}})">
+	<div class="inner">
+		<div class="top">
+			<span class="title meme-text">{{{memeTitle}}}</span><br/>
+		</div>
+		<div class="bottom">
+			<span class="subtitle meme-text">{{{memeSubtitle}}}</span>
+		</div>
+	</div>
+</div>
+</template>
+
+<template name="message">
+<div class="message" id="message-{{_id}}">
+	<header>
+		{{#withAuthor authorId}}
+		<div class="author" title="{{name}}" style="background-image:url({{image}})"></div>
+		<span class="name">{{name}}</span>
+		{{/withAuthor}}
+		{{link-render}}
+		<nav>
+			{{#if ownerOrAdmin}}
+				{{#if imageUrl}}
+					{{#if meme}}
+					{{else}}
+					<button class="meme-btn">
+						<i class="icon-text-width"></i>
+					</button>
+					{{/if}}
+				{{/if}}
+				<button class="delete-btn"><i class="icon-trash"></i></button>
+			{{/if}}
+			{{#if lovable}}
+				<button class="love-btn"><i class="icon-heart"></i></button>
+			{{/if}}
+		</nav>
+	</header>
+	{{#if meme}}
+		{{#ifOwner this}}
+			{{> memificator}}
+		{{else}}
+			{{> memeDisplay}}
+		{{/ifOwner}}
+	{{else}}
+		{{#if msg}}
+			<p>{{say msg}}<p>
+		{{/if}}
+		{{#if imageUrl}}
+			<img src="{{{imageUrl}}}" />
+		{{/if}}
+		{{#if youtube}}
+			<iframe id="ytplayer" type="text/html" width="400" height="244" src="http://www.youtube.com/embed/?q={{youtube}}&autoplay=0&origin=http://example.com" frameborder="0"></iframe>
+		{{/if}}
+	{{/if}}
+	<div class="comments">
+		{{#loveLoop this}}
+			<i class="icon-heart"></i>
+			{{/loveLoop}}
+		{{#if comments}}
+			{{#each comments}}
+			{{/each}}
+		{{/if}}
+	</div>
+	{{#each comments}}
+	<div class="comment">
+		<div class="author" style="background-image: url({{ getAuthorImage authorId }})"></div>
+		<div class="name">{{getAuthorName authorId}}</div>
+		<div class="text">{{text}}</div>
+	</div>
+	{{/each}}
+	<nav class="comment">
+		{{> currentUserImage }}
+		<nav>
+			<button class="comment-btn"><i class="icon-comment-alt"></i></button>
+		</nav>
+		<input type="text" name="text">
+	</nav>
+</div>
+</template>
