@@ -204,7 +204,7 @@ if Meteor.isClient
     Comments.find {msgId: @_id}, {sort: {timestamp: 1}}
   
   captureAndSendComment = (message, el) ->
-    $input = $(el).closest('nav.comment').find('input[type=text]')
+    $input = $(el).closest('[data-comment-form]').find('input[type=text]')
     text = $input.val()
     $input.val('')
     if text.length > 0
@@ -253,8 +253,6 @@ if Meteor.isClient
       else
         return options.inverse @
     ifOwner: (context, options) ->
-      console.dir get_user()
-      console.dir @
       userId = get_user()._id
       if userId is @authorId or isAdminUser userId
         return options.fn @
@@ -339,7 +337,7 @@ if Meteor.isClient
 
   @balanceText = (event) ->
     $(event.target).parent().textfill
-      maxFontPixels: 180
+      maxFontPixels: 90
       maxWidth: $(event.target).parents('.meme-container').width() - 40
 
   @updateMeme = (_id) ->
@@ -357,7 +355,7 @@ if Meteor.isClient
     maxWidth = $firstNode.width() - 40
     $firstNode.find('.meme-text').each ->
       $(@).parent().textfill
-        maxFontPixels: 180
+        maxFontPixels: 90
         maxWidth: maxWidth
     return
 
@@ -539,6 +537,18 @@ if Meteor.isClient
   for name, collection of subscribeList
     @subscriptions[name] = Meteor.subscribe name
 
+  getMaxFontSize = (width) ->
+    if width > 767
+      return 180
+    else
+      return 90
+  window.onresize = _.debounce((->
+    $('.meme-text').each ->
+      $(this).parent().textfill
+        maxFontPixels: getMaxFontSize window.innerWidth
+        maxWidth: $(this).parents('.meme-container').width() - 40
+  ), 1000)
+
 if Meteor.isServer
   """
   Meteor.Router.add '/boris/:state', (state) ->
@@ -568,7 +578,7 @@ if Meteor.isServer
       console.log message_id
       tokens = cmd.split(' ')
       if tokens.length is 2
-        if tokens[0] is 'rm' and tokens[1] is Meteor.settings.private.password
+        if tokens[0] is 'rm' and ((tokens[1] is Meteor.settings?.private?.password) or not Meteor.settings.private?.password?)
           Messages.update {_id: message_id},
             $set: {deleted: true}
 

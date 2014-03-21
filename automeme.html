@@ -19,29 +19,32 @@
 </body>
 
 <template name="header">
-	<header style="background-image: url({{background}})">
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+		  <a class="navbar-brand" href="#">{{settings.title}}</a>
+        </div>
+      </div>
+  </div>
+  <div class="container">
 		{{#if messagesReady}}
-			<section id="send-message">
-				{{> send-message}}
-			</section>
+			{{> send-message}}
 		{{ else }}
 			<h1>{{settings.title}} {{roomName}}</h1>
 			{{#with karma}}
 				<span class="karma">You have {{ points }} heart point(s).</span>
 			{{/with}}
-			<div class="clearfix"></div>
 		{{/if}}
-	</header>
+	</div>
 </template>
 
 <template name="body">
 	{{> header}}
-	{{#if messagesReady}}
-		{{> messages}}
-	{{/if}}
-	<section id="footer">
-		<img src="/fortress.png" width="64px">
-	</section>
+	<div class="container">
+		{{#if messagesReady}}
+			{{> messages}}
+		{{/if}}
+	</div>
 </template>
 
 <template name="weather-report">
@@ -80,13 +83,19 @@
 </template>
 
 <template name="send-message">
-	<form onsubmit="event.preventDefault();">
-		<input id="new-message-input" type="text" name="new-message" placeholder="Enter some text here, and I will create an automeme for you..."></input>
-		{{#if filepickerEnabled}}
-			<button id="btn-file-picker" onclick="javascript:pickFile()">Pick a file</button>
-		{{/if}}
-		<button name="send">Meme</button>
-	</form>
+	<div class="well">
+		<p>Please enjoy the contributions of others, and let&rsquo;s try to have a sensible chuckle.</p>
+		<form role="form" class="form-horizontal" onsubmit="event.preventDefault();">
+			<div class="form-group">
+				<div class="col-sm-10">
+					<input class="form-control" id="new-message-input" type="text" name="new-message" placeholder="Say something..."></input>
+				</div>
+				<div class="col-sm-2">
+					<button class="form-control" name="send">automeme</button>
+				</div>
+			</div>
+		</form>
+	</div>
 </template>
 
 <template name="memificator">
@@ -116,53 +125,54 @@
 </template>
 
 <template name="message">
-<div class="message" id="message-{{_id}}">
-	<header>
-		{{link-render}}
-		<nav>
+<div class="message-container">
+	<div class="message" id="message-{{_id}}">
+		<div class="ooui">
 			{{#if ownerOrAdmin}}
-				<button class="delete-btn"><i class="fa fa-trash-o"></i></button>
+				<button class="btn btn-info btn-lg delete-btn"><i class="fa fa-trash-o"></i></button>
 			{{/if}}
 			{{#if lovable}}
-				<button class="love-btn"><i class="fa fa-heart"></i></button>
+				<button class="btn btn-info btn-lg love-btn"><i class="fa fa-heart"></i></button>
 			{{/if}}
-		</nav>
-	</header>
-	{{#if meme}}
-		{{#ifOwner this}}
-			{{> memificator}}
+		</div>
+		{{#if meme}}
+			{{#ifOwner this}}
+				{{> memificator}}
+			{{else}}
+				{{> memeDisplay}}
+			{{/ifOwner}}
 		{{else}}
-			{{> memeDisplay}}
-		{{/ifOwner}}
-	{{else}}
-		{{#if msg}}
-			<p>{{say msg}}<p>
+			{{#if msg}}
+				<p>{{say msg}}<p>
+			{{/if}}
+			{{#if imageUrl}}
+				<img src="{{{imageUrl}}}" />
+			{{/if}}
+			{{#if youtube}}
+				<iframe id="ytplayer" type="text/html" width="400" height="244" src="http://www.youtube.com/embed/?q={{youtube}}&autoplay=0&origin=http://example.com" frameborder="0"></iframe>
+			{{/if}}
 		{{/if}}
-		{{#if imageUrl}}
-			<img src="{{{imageUrl}}}" />
-		{{/if}}
-		{{#if youtube}}
-			<iframe id="ytplayer" type="text/html" width="400" height="244" src="http://www.youtube.com/embed/?q={{youtube}}&autoplay=0&origin=http://example.com" frameborder="0"></iframe>
-		{{/if}}
-	{{/if}}
-	<div class="comments">
-		{{#loveLoop this}}
-			<i class="fa fa-heart"></i>
-			{{/loveLoop}}
 	</div>
-	{{#each comments}}
-	<div class="comment">
-		<div class="author"></div>
-		<div class="name"></div>
-		<div class="text">{{text}}</div>
-	</div>
-	{{/each}}
-	<nav class="comment">
-		{{> currentUserImage }}
-		<nav>
-			<button class="comment-btn"><i class="fa fa-comment-o"></i></button>
-		</nav>
-		<input type="text" name="text">
-	</nav>
 </div>
+<div class="comments">
+	{{#loveLoop this}}
+		<i class="fa fa-heart"></i>
+	{{/loveLoop}}
+</div>
+{{#each comments}}
+<div class="comment">
+	<div class="text">{{text}}</div>
+</div>
+{{/each}}
+<form data-comment-form role="form" class="form-horizontal" onsubmit="event.preventDefault();">
+	<div class="form-group">
+		<label for="text" class="col-sm-2 control-label">comment</label>
+		<div class="col-sm-8">
+			<input class="form-control" type="text" name="text" placeholder="Type your response...">
+		</div>
+		<div class="col-sm-2">
+			<button class="btn btn-info comment-btn"><i class="fa fa-comment-o"></i></button>
+		</div>
+	</div>
+</form>
 </template>
