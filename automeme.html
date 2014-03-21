@@ -91,7 +91,7 @@
 					<input class="form-control" id="new-message-input" type="text" name="new-message" placeholder="Say something..."></input>
 				</div>
 				<div class="col-sm-2">
-					<button class="form-control" name="send">automeme</button>
+					<button class="btn btn-primary form-control" name="send">automeme</button>
 				</div>
 			</div>
 		</form>
@@ -129,10 +129,10 @@
 	<div class="message" id="message-{{_id}}">
 		<div class="ooui">
 			{{#if ownerOrAdmin}}
-				<button class="btn btn-info btn-lg delete-btn"><i class="fa fa-trash-o"></i></button>
+				<button class="btn btn-alert btn-lg delete-btn"><i class="fa fa-trash-o"></i></button>
 			{{/if}}
 			{{#if lovable}}
-				<button class="btn btn-info btn-lg love-btn"><i class="fa fa-heart"></i></button>
+				<button class="btn btn-alert btn-lg love-btn"><i class="fa fa-heart"></i></button>
 			{{/if}}
 		</div>
 		{{#if meme}}
@@ -166,11 +166,10 @@
 {{/each}}
 <form data-comment-form role="form" class="form-horizontal" onsubmit="event.preventDefault();">
 	<div class="form-group">
-		<label for="text" class="col-sm-2 control-label">comment</label>
-		<div class="col-sm-8">
+		<div class="col-xs-9">
 			<input class="form-control" type="text" name="text" placeholder="Type your response...">
 		</div>
-		<div class="col-sm-2">
+		<div class="col-xs-3">
 			<button class="btn btn-info comment-btn"><i class="fa fa-comment-o"></i></button>
 		</div>
 	</div>

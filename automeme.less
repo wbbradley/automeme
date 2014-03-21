@@ -170,9 +170,13 @@ body > section {
 	position: relative;
 	clear: both;
 	.ooui {
-		text-align: right;
+		opacity: .6;
+		&:hover {
+			opacity: 1;
+		}
+		top: -15px;
+		right: -15px;
 		position: absolute;
-		width: 100%;
 		z-index: 1000;
 	}
 	img {
@@ -229,6 +233,7 @@ a.assign {
 }
 
 .meme-container {
+	background-color: white;
 	overflow: hidden;
 	.box;
 	.image;
