@@ -1,6 +1,5 @@
 {
   "packages": {
-    "font-awesome": {},
-    "accounts-anonymous": {}
+    "bootstrap3-less": {}
   }
 }

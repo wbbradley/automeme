@@ -1,4 +1,4 @@
-console.log "Starting home-dashboard..."
+console.log "Starting automeme..."
 
 @get_user = () ->
   user = Session.get('user')
@@ -26,7 +26,7 @@ console.log "Starting home-dashboard..."
 
 log = (level, msg) ->
   if typeof console != 'undefined'
-    console.log "home-dashboard : #{level} : #{msg}"
+    console.log "automeme : #{level} : #{msg}"
 
 Invites = new Meteor.Collection 'invites'
 Messages = new Meteor.Collection 'messages'
