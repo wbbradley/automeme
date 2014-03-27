@@ -223,6 +223,15 @@ if Meteor.isClient
     'click .delete-btn': () ->
       Messages.update {_id: @_id},
         $set: {deleted: true}
+    'click .next-btn': () ->
+      if @images.length > 1
+        images = @images.slice(1)
+        images.push(@imageUrl)
+        imageUrl = images[0]
+        Messages.update {_id: @_id},
+          $set:
+            images: images
+            imageUrl: imageUrl
     'keypress input[name="text"]': (event) ->
       if event.which is 13
         captureAndSendComment @, event.target
@@ -591,16 +600,18 @@ if Meteor.isServer
           console.dir error
         if result?.content?
           results = (JSON.parse result.content)?.responseData?.results
-          if results
-            console.dir results
-            item = results[Math.floor(Math.random() * results.length)]
-            if item?.unescapedUrl?
+          if results and results.length > 0
+            images = (item.unescapedUrl for item in results)
+            images = _.uniq images
+            imageUrl = images[0]
+            if imageUrl
               words = searchString.split ' '
               half = Math.floor(words.length / 2)
               title = words.slice(0, half).join(' ')
               subTitle = words.slice(half).join(' ')
               Messages.insert
-                imageUrl: item.unescapedUrl
+                imageUrl: imageUrl
+                images: images
                 timestamp: Date.now()
                 authorId: user_id
                 roomId: room_id
