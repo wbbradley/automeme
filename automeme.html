@@ -99,7 +99,7 @@
 </template>
 
 <template name="memificator">
-<div class="meme-container" style="background-image: url({{{imageUrl}}})">
+<div {{memeContainerAttrs}}>
 	<div class="inner">
 		<div class="top">
 			<span contenteditable data-msg-id="{{_id}}" id="meme-{{_id}}-title" class="title meme-text">{{{memeTitle}}}</span><br/>
@@ -112,7 +112,7 @@
 </template>
 
 <template name="memeDisplay">
-<div class="meme-container" style="background-image: url({{{imageUrl}}})">
+<div {{memeDisplayAttrs}}>
 	<div class="inner">
 		<div class="top">
 			<span class="title meme-text">{{{memeTitle}}}</span><br/>
@@ -133,33 +133,25 @@
 				<button class="btn btn-alert btn-lg prev-btn"><i class="fa fa-toggle-left"></i></button>
 				<button class="btn btn-alert btn-lg next-btn"><i class="fa fa-toggle-right"></i></button>
 			{{/if}}
-			{{#if lovable}}
-				<button class="btn btn-alert btn-lg love-btn"><i class="fa fa-heart"></i></button>
-			{{/if}}
 		</div>
 		{{#if meme}}
-			{{#ifOwner this}}
+			{{#if owner}}
 				{{> memificator}}
 			{{else}}
 				{{> memeDisplay}}
-			{{/ifOwner}}
+			{{/if}}
 		{{else}}
 			{{#if msg}}
-				<p>{{say msg}}<p>
+				<p>{{say msg}}</p>
 			{{/if}}
 			{{#if imageUrl}}
-				<img src="{{{imageUrl}}}" />
+				<img {{image_attrs}} />
 			{{/if}}
 			{{#if youtube}}
 				<iframe id="ytplayer" type="text/html" width="400" height="244" src="http://www.youtube.com/embed/?q={{youtube}}&autoplay=0&origin=http://example.com" frameborder="0"></iframe>
 			{{/if}}
 		{{/if}}
 	</div>
-</div>
-<div class="comments">
-	{{#loveLoop this}}
-		<i class="fa fa-heart"></i>
-	{{/loveLoop}}
 </div>
 {{#each comments}}
 <div class="comment">

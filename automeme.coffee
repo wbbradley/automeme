@@ -195,11 +195,6 @@ if Meteor.isClient
     userId = get_user()._id
     return userId is @authorId or isAdminUser userId
 
-  Template.message.lovable = ->
-    userId = get_user()._id
-    userLoveIds = @userLoveIds or []
-    return @authorId isnt userId and userLoveIds.indexOf(userId) is -1
-
   Template.message.comments = ->
     Comments.find {msgId: @_id}, {sort: {timestamp: 1}}
   
@@ -287,22 +282,11 @@ if Meteor.isClient
         return options.fn @
       else
         return options.inverse @
-    ifOwner: (context, options) ->
+    owner: (context, options) ->
       userId = get_user()._id
-      if userId is @authorId or isAdminUser userId
-        return options.fn @
-      else
-        return options.inverse @
-    loveLoop: (context, options) ->
-      count = @userLoveIds?.length or 0
-      if count
-        ret = "";
-        while count > 0
-          ret += options.fn @
-          --count
-        return ret
-      else
-        return options.inverse @
+      return (userId is @authorId or isAdminUser userId)
+    image_attrs: ->
+      src: @imageUrl
 
     say: (msg) ->
       # $.say msg
@@ -384,6 +368,15 @@ if Meteor.isClient
         memeTitle: title
         memeSubtitle: subtitle
 
+  Template.memificator.helpers
+    memeContainerAttrs: ->
+      class: "meme-container"
+      style: "background-image: url(#{@imageUrl})"
+
+  Template.memeDisplay.helpers
+    memeDisplayAttrs: ->
+      class: "meme-container"
+      style: "background-image: url(#{@imageUrl})"
 
   Template.memeDisplay.rendered = Template.memificator.rendered = ->
     $firstNode = $(@firstNode)
