@@ -28,7 +28,7 @@
   </div>
   <div class="container">
 		{{#if messagesReady}}
-			{{> send-message}}
+			{{> send_message}}
 		{{ else }}
 			<h1>{{settings.title}} {{roomName}}</h1>
 			{{#with karma}}
@@ -82,15 +82,15 @@
 {{/if}}
 </template>
 
-<template name="send-message">
+<template name="send_message">
 	<div class="well">
 		<p>Please enjoy the contributions of others, and let&rsquo;s try to have a sensible chuckle.</p>
 		<form role="form" class="form-horizontal" onsubmit="event.preventDefault();">
 			<div class="form-group">
-				<div class="col-sm-10">
-					<input class="form-control" id="new-message-input" type="text" name="new-message" placeholder="Say something..."></input>
+				<div class="col-sm-9">
+					<input class="form-control" id="new-message-input" type="text" name="new-message" placeholder="Say something...">
 				</div>
-				<div class="col-sm-2">
+				<div class="col-sm-3">
 					<button class="btn btn-primary form-control" name="send">automeme</button>
 				</div>
 			</div>
@@ -130,6 +130,7 @@
 		<div class="ooui">
 			{{#if ownerOrAdmin}}
 				<button class="btn btn-alert btn-lg delete-btn"><i class="fa fa-trash-o"></i></button>
+				<button class="btn btn-alert btn-lg prev-btn"><i class="fa fa-toggle-left"></i></button>
 				<button class="btn btn-alert btn-lg next-btn"><i class="fa fa-toggle-right"></i></button>
 			{{/if}}
 			{{#if lovable}}

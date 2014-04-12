@@ -223,15 +223,41 @@ if Meteor.isClient
     'click .delete-btn': () ->
       Messages.update {_id: @_id},
         $set: {deleted: true}
-    'click .next-btn': () ->
+    'click .prev-btn': () ->
       if @images.length > 1
-        images = @images.slice(1)
-        images.push(@imageUrl)
-        imageUrl = images[0]
+        images = @images
+        if @imageIndex?
+          imageIndex = @imageIndex - 1
+        else
+          imageIndex = @images.length - 1
+
+        if imageIndex < 0
+          imageIndex = @images.length - 1
+
+        if (imageIndex > @images.length - 4) and not @stoppedSearching
+          Meteor.call 'searchMore', @_id
+
+        imageUrl = images[imageIndex % images.length]
         Messages.update {_id: @_id},
           $set:
-            images: images
             imageUrl: imageUrl
+            imageIndex: imageIndex
+    'click .next-btn': () ->
+      if @images.length > 1
+        images = @images
+        if @imageIndex?
+          imageIndex = @imageIndex + 1
+        else
+          imageIndex = 1
+
+        if (imageIndex > @images.length - 4) and not @stoppedSearching
+          Meteor.call 'searchMore', @_id
+
+        imageUrl = images[imageIndex % images.length]
+        Messages.update {_id: @_id},
+          $set:
+            imageUrl: imageUrl
+            imageIndex: imageIndex
     'keypress input[name="text"]': (event) ->
       if event.which is 13
         captureAndSendComment @, event.target
@@ -511,11 +537,11 @@ if Meteor.isClient
 
         Session.set 'skipAhead', 0
 
-  Template['send-message'].helpers
+  Template.send_message.helpers
     filepickerEnabled: ->
       return Boolean(getGlobal 'filepickerApiKey')
 
-  Template['send-message'].events
+  Template.send_message.events
     'keypress input[name="new-message"]': (event) ->
       if event.which is 13
         captureAndSendMessage()
@@ -593,8 +619,37 @@ if Meteor.isServer
 
       return
 
-    search: (searchString, user_id, room_id) ->
-      url = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&as_filetype=gif&q=#{encodeURIComponent(searchString)}"
+    searchMore: (messageId) ->
+      console.log "Searching for more images for message #{messageId}"
+      message = Messages.findOne {_id: messageId}
+      if not message
+        console.log "No message found with id #{messageId}"
+        return
+      url = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&as_filetype=gif&q=#{encodeURIComponent(message.searchString)}&start=#{(message.images.length >> 2) << 2}"
+      console.log "Searching #{url}"
+      Meteor.http.get url, (error, result) ->
+        if error?
+          console.dir error
+          Messages.update {_id: messageId},
+            $set:
+              stoppedSearching: true
+          return
+
+        if result?.content?
+          results = (JSON.parse result.content)?.responseData?.results
+          if results and results.length > 0
+            images = (item.unescapedUrl for item in results)
+            console.dir images
+            images = message.images.concat(images)
+            Messages.update {_id: messageId},
+              $set:
+                images: images
+            message = Messages.findOne {_id: messageId}
+            console.dir message.images
+
+
+    search: (searchString, user_id, room_id, start=0) ->
+      url = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&as_filetype=gif&q=#{encodeURIComponent(searchString)}&start=#{start}"
       Meteor.http.get url, (error, result) ->
         if error?
           console.dir error
@@ -602,7 +657,6 @@ if Meteor.isServer
           results = (JSON.parse result.content)?.responseData?.results
           if results and results.length > 0
             images = (item.unescapedUrl for item in results)
-            images = _.uniq images
             imageUrl = images[0]
             if imageUrl
               words = searchString.split ' '
@@ -610,6 +664,7 @@ if Meteor.isServer
               title = words.slice(0, half).join(' ')
               subTitle = words.slice(half).join(' ')
               Messages.insert
+                searchString: searchString
                 imageUrl: imageUrl
                 images: images
                 timestamp: Date.now()

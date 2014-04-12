@@ -33,8 +33,8 @@
 
 .media-width () {
 	@media @above-xs {
-		max-width: 768px;
-		width: 768px;
+		max-width: 640px;
+		width: 640px;
 	}
 	@media @below-sm {
 		max-width: 320px;
@@ -44,12 +44,12 @@
 
 .media-height () {
 	@media @above-xs {
-		max-height: 768px;
-		height: 768px;
+		max-height: 610px;
+		height: 610px;
 	}
 	@media @below-sm {
-		max-height: 320px;
-		height: 320px;
+		max-height: 300px;
+		height: 300px;
 	}
 }
 
@@ -161,6 +161,9 @@ body > section {
 .message-container {
 	clear: both;
 	padding: 15px;
+	@media @below-sm {
+		padding: 10px;
+	}
 	margin-bottom: 20px;
 	background-color: @darkblack;
 }
