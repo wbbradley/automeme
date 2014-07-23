@@ -166,7 +166,7 @@ if Meteor.isClient
   makeMeme = (_id) ->
     Messages.update {_id: _id},
       $set:
-        meme: true
+        meme: false
         memeTitle: 'title'
         memeSubtitle: 'subtitle'
 
@@ -482,7 +482,7 @@ if Meteor.isClient
         timestamp: Date.now()
         authorId: get_user()._id
         roomId: currentRoom()._id
-        meme: true
+        meme: false
         memeTitle: 'title'
         memeSubtitle: 'subtitle'
       goToFirstPage()
@@ -663,7 +663,7 @@ if Meteor.isServer
                 timestamp: Date.now()
                 authorId: user_id
                 roomId: room_id
-                meme: true
+                meme: false
                 memeTitle: title
                 memeSubtitle: subTitle
 
