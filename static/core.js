@@ -6,15 +6,19 @@
       var unescapedUrl, imageDiv
 
       console.dir(data);
-      var results = data.responseData.results;
-      if (results && results.length > 0) {
-       for (i = 0; i < results.length; i++) {
-          unescapedUrl = results[i].unescapedUrl;
-          imageDiv = document.getElementById("image-" + (i + 1).toString());
-          if (imageDiv) {
-            imageDiv.style.backgroundImage = "url(" + unescapedUrl + ")";
+      for (j = 0; j < data.length; j++) {
+        var results = data[j].responseData.results;
+        if (results && results.length > 0) {
+          for (i = 0; i < results.length; i++) {
+            unescapedUrl = results[i].unescapedUrl;
+            imageDiv = document.getElementById("image-" +
+                (j + 1).toString() + "-" +
+                (i + 1).toString());
+            if (imageDiv) {
+              imageDiv.style.backgroundImage = "url(" + unescapedUrl + ")";
+            }
           }
-       }
+        }
       }
     }, "json");
     /*

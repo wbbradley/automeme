@@ -22,33 +22,63 @@ func queryServer(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+type Response struct {
+	statusCode int
+	data       string
+}
+
 // Handle existence queries
 func queryServerGet(w http.ResponseWriter, req *http.Request) {
 	query := req.FormValue("q")
 	fmt.Println("querying for", query)
 	w.Header().Set("Content-Type", "application/json")
+	responses := make(chan Response)
 
-	var url = "https://ajax.googleapis.com" +
-		"/ajax/services/search/images" +
-		"?v=1.0&as_filetype=gif&q=" + url.QueryEscape(query) +
-		"&start=0"
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Println("it's a 406")
-		w.WriteHeader(406)
-		return
+	for j := 0; j < 2; j++ {
+		go func(j int) {
+			var response Response
+			var url = "https://ajax.googleapis.com" +
+				"/ajax/services/search/images" +
+				"?v=1.0&as_filetype=gif&q=" + url.QueryEscape(query) +
+				"&start=" + fmt.Sprint(j*4)
+			resp, err := http.Get(url)
+			fmt.Println("status code for twitter is", resp.StatusCode)
+			if err != nil {
+				response.statusCode = resp.StatusCode
+				responses <- response
+				return
+			}
+			defer resp.Body.Close()
+			response.statusCode = 200
+			response.data = ""
+
+			buf := make([]byte, 1024*4)
+			for {
+				n, _ := resp.Body.Read(buf)
+				if n > 0 {
+					response.data += string(buf[:n])
+				} else {
+					break
+				}
+			}
+			responses <- response
+		}(j)
 	}
-	defer resp.Body.Close()
 
-	buf := make([]byte, 1024*4)
-	for {
-		n, _ := resp.Body.Read(buf)
-		if n > 0 {
-			w.Write(buf[:n])
-		} else {
-			break
+	w.WriteHeader(200)
+	w.Write([]byte("["))
+	sep := ""
+	for i := 0; i < 2; i++ {
+		response := <-responses
+		if response.statusCode/100 == 2 {
+			w.Write([]byte(sep))
+			w.Write([]byte(response.data))
+			sep = ","
 		}
 	}
+	w.Write([]byte("]"))
+
+	close(responses)
 }
 
 func main() {
