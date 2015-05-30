@@ -55,7 +55,7 @@ func queryServerGet(w http.ResponseWriter, req *http.Request) {
 			var url = "https://ajax.googleapis.com" +
 				"/ajax/services/search/images" +
 				"?v=1.0&as_filetype=gif&q=" + url.QueryEscape(query) +
-				"&as_sitesearch=giphy.com" +
+				"&as_sitesearch=gifbin.com" +
 				"&safe=off" +
 				"&userip=" + url.QueryEscape(userip) +
 				"&start=" + fmt.Sprint(j*4)
