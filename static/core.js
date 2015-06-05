@@ -1,4 +1,10 @@
 ;$(function () {
+    function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
     function syntaxHighlight(json) {
         if (typeof json != 'string') {
             json = JSON.stringify(json, undefined, 2);
@@ -63,4 +69,10 @@
 
   document.getElementById('js-image-form').addEventListener('submit', performSearch, false);
   document.getElementById('js-search-button').addEventListener('click', performSearch, false);
+  
+  var query = getParameterByName('q');
+  if (query && query.length > 0) {
+      $('#js-search-text').val(query);
+      performSearch();
+  }
 });

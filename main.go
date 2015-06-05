@@ -52,6 +52,11 @@ func queryServerGet(w http.ResponseWriter, req *http.Request) {
 	for j := 0; j < 2; j++ {
 		go func(j int) {
 			var response Response
+			// Default to failure, unless we're able to replace this response
+			// with a success
+			response.statusCode = 500
+			defer func() { responses <- response }()
+
 			var url = "https://ajax.googleapis.com" +
 				"/ajax/services/search/images" +
 				"?v=1.0&as_filetype=gif&q=" + url.QueryEscape(query) +
@@ -62,7 +67,6 @@ func queryServerGet(w http.ResponseWriter, req *http.Request) {
 			resp, err := http.Get(url)
 			if err != nil {
 				response.statusCode = resp.StatusCode
-				responses <- response
 				return
 			}
 			defer resp.Body.Close()
@@ -78,7 +82,6 @@ func queryServerGet(w http.ResponseWriter, req *http.Request) {
 					break
 				}
 			}
-			responses <- response
 		}(j)
 	}
 
