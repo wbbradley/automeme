@@ -62,7 +62,7 @@
         event.preventDefault();
         var searchText = $('#js-search-text').val();
         if (searchText) {
-            window.location.hash = searchText;
+            window.location.hash = searchText.replace(/ /g, "+");
             findAnImage(searchText, 0);
         }
         return false;
@@ -72,12 +72,17 @@
     document.getElementById('js-search-button').addEventListener('click', performSearch, false);
 
     var query = getParameterByName('q');
+
     if (!query) {
         query = window.location.hash;
-        if (query && query[0] == '#') {
-            query = query.substr(1);
-        }
     }
+
+    if (query && query[0] == '#') {
+        query = query.substr(1);
+    }
+
+    query = query.replace(/\+/g, ' ');
+    query = decodeURIComponent(query);
 
     if (query && query.length > 0) {
         $('#js-search-text').val(query);
