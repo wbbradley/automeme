@@ -104,7 +104,7 @@ $(function () {
         }),
       });
       xhr.done(function() {
-        console.log("Unmemed successfully");
+        console.log("(Un)memed successfully");
       });
     }
 
@@ -135,4 +135,15 @@ $(function () {
     }
 
     $(document).on('click', '[data-action]', performElementAction);
+    window.setInterval(function() {
+        var xhr = $.ajax({
+            type: 'GET',
+            url: "/memes",
+        });
+        xhr.done(function(data) {
+            imageRanks = _.sortBy(data.imageRanks, function (item) { return -item.score });
+            // TODO: put these images into a display container, probably time to use react
+            console.log(imageRanks);
+        });
+    }, 15000);
 });
