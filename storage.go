@@ -49,10 +49,10 @@ func (ms MemoryStorage) GetImageRanks(userId UserId) []ImageRank {
 }
 
 func (ms *MemoryStorage) Meme(userId UserId, imageUrl ImageURL) {
+	fmt.Println("meming", imageUrl)
 	memoryImage, ok := ms.imagesByUrl[imageUrl]
-	if ok {
-		memoryImage.userMemes[userId] = 1
-	} else {
+	if !ok {
+		fmt.Println("didn't find", imageUrl, ", so we're adding it")
 		now := time.Now()
 		memoryImage = &MemoryImage{
 			imageUrl,
@@ -62,7 +62,12 @@ func (ms *MemoryStorage) Meme(userId UserId, imageUrl ImageURL) {
 		}
 		ms.imagesByUrl[imageUrl] = memoryImage
 	}
+
+	fmt.Println("found", imageUrl, ", so we're upvoting it")
+
+	memoryImage.userMemes[userId] = 1
 	memoryImage.computeScore()
+	fmt.Println(imageUrl, "now has a score of", memoryImage.score)
 }
 
 func (ms *MemoryStorage) Unmeme(userId UserId, imageUrl ImageURL) {
