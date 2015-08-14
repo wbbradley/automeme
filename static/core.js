@@ -88,25 +88,20 @@ $(function () {
     }
 
     function memeImage(elt) {
-      var xhr = $.ajax({
-        type: 'POST',
-        url: "/⬆",
-        data: {
-          url: $(elt).parents('.image-container').find('.image img').attr('src'),
-        },
-      });
-      xhr.done(function() {
-        console.log("Memed successfully");
-      });
+        memeAction(elt, "/⬆");
     }
 
     function unmemeImage(elt) {
+        memeAction(elt, "/⬇");
+    }
+
+    function memeAction(elt, endpoint) {
       var xhr = $.ajax({
         type: 'POST',
-        url: "/⬇",
-        data: {
-          url: $(elt).parents('.image-container').find('.image img').attr('src'),
-        },
+        url: endpoint,
+        data: JSON.stringify({
+          url: $(elt.target).parents('.image-container').find('.image img').attr('src'),
+        }),
       });
       xhr.done(function() {
         console.log("Unmemed successfully");

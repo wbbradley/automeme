@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -46,7 +47,7 @@ func getRemoteIP(req *http.Request) string {
 // Handle existence queries
 func queryServerGet(w http.ResponseWriter, req *http.Request) {
 	query := req.FormValue("q")
-	fmt.Println("querying for", query)
+	log.Println("querying for", query)
 	w.Header().Set("Content-Type", "application/json")
 	responses := make(chan Response)
 	userip := getRemoteIP(req)
@@ -118,15 +119,19 @@ func unmeme(w http.ResponseWriter, req *http.Request) {
 }
 
 func handleMemeAction(w http.ResponseWriter, req *http.Request, memeAction MemeAction) {
-	decoder := json.NewDecoder(req.Body)
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		panic("bad")
+	}
+	log.Println(string(body))
 	var t memePacket
-	err := decoder.Decode(&t)
+	err = json.Unmarshal(body, &t)
 	if err == nil {
 		w.WriteHeader(200)
 		memeAction("me", t.Url)
 	} else {
 		w.WriteHeader(400)
-		fmt.Println(err)
+		log.Println(err)
 	}
 }
 
