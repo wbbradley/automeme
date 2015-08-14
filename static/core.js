@@ -1,4 +1,4 @@
-;$(function () {
+$(function () {
     function getParameterByName(name) {
         name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
         var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -26,36 +26,45 @@
                 return '<span class="' + cls + '">' + match + '</span>';
                 });
     }
+
     function findAnImage(searchString, startOffset) {
         var url = "/q?q=" + encodeURIComponent(searchString);
 
         $.get(url, function(data, textStatus, jqXHR) {
-            var unescapedUrl, imageDiv
-                // document.getElementById("response").innerHTML = syntaxHighlight(data)
-                for (j = 0; j < data.length; j++) {
-                    var results = data[j].responseData.results;
-                    if (results && results.length > 0) {
-                        for (i = 0; i < results.length; i++) {
-                            unescapedUrl = results[i].unescapedUrl;
-                            imageDiv = document.getElementById("image-" +
-                                    (j + 1).toString() + "-" +
-                                    (i + 1).toString());
-                            if (imageDiv) {
-                                imageDiv.innerHTML = "<img src=\"" + unescapedUrl + "\" title=\"" + unescapedUrl + "\">";
-                            }
-                        }
-                    } else {
-                        for (i = 0; i < 4; i++) {
-                            imageDiv = document.getElementById("image-" +
-                                    (j + 1).toString() + "-" +
-                                    (i + 1).toString());
-                            if (imageDiv) {
-                                imageDiv.innerHTML = "";
-                            }
-                        }
-                    }
-                }
+
+            
+            var imageResults = _(data)
+                .map(function(d) {
+                    var results = d.responseData.results;
+                    return _.isEmpty(results) ? [] : results;
+                })
+                .flatten()
+                .value();
+
+            // NOTE: Uses implicit DOM order
+            var imageContainers = $('.image-container'); 
+            _(imageContainers)
+                .zip(imageResults)
+                .each(function(ztuple) {
+                    displayResultInImageContainer(ztuple[0], ztuple[1]);
+                })
+                .value();
         }, "json");
+    }
+
+    function displayResultInImageContainer(container, result) {
+        if (!container) {
+          return;
+        }
+
+        // Replace contents with result if it exists, otherwise clear
+        $(container).find('.image').empty();
+        if (result) {
+          var imageElt = $("<img>")
+            .attr('src', result.unescapedUrl)
+            .attr('title', result.unescapedUrl);
+          $(container).find('.image').empty().append(imageElt);
+        }
     }
 
     function performSearch() {
@@ -67,6 +76,47 @@
         }
         return false;
     }
+
+    function performElementAction(e) {
+        var action = $(e.currentTarget).data('action');
+        var actionFunc = actionMap[action];
+        if (!actionFunc) {
+          console.log("Unrecognized action:", action);
+          return;
+        }
+        return actionFunc(e);
+    }
+
+    function memeImage(elt) {
+      var xhr = $.ajax({
+        type: 'POST',
+        url: "/⬆",
+        data: {
+          url: $(elt).parents('.image-container').find('.image img').attr('src'),
+        },
+      });
+      xhr.done(function() {
+        console.log("Memed successfully");
+      });
+    }
+
+    function unmemeImage(elt) {
+      var xhr = $.ajax({
+        type: 'POST',
+        url: "/⬇",
+        data: {
+          url: $(elt).parents('.image-container').find('.image img').attr('src'),
+        },
+      });
+      xhr.done(function() {
+        console.log("Unmemed successfully");
+      });
+    }
+
+    var actionMap = {
+      'meme': memeImage,
+      'unmeme': unmemeImage,
+    };
 
     document.getElementById('js-image-form').addEventListener('submit', performSearch, false);
     document.getElementById('js-search-button').addEventListener('click', performSearch, false);
@@ -88,4 +138,6 @@
         $('#js-search-text').val(query);
         performSearch();
     }
+
+    $(document).on('click', '[data-action]', performElementAction);
 });
