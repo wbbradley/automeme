@@ -101,10 +101,24 @@ func queryServerGet(w http.ResponseWriter, req *http.Request) {
 	close(responses)
 }
 
+func meme(w http.ResponseWriter, req *http.Request) {
+	fmt.Println("meming")
+	w.WriteHeader(200)
+}
+
+func unmeme(w http.ResponseWriter, req *http.Request) {
+	fmt.Println("unmeming")
+	w.WriteHeader(200)
+}
+
 func main() {
 	flag.Parse()
 
 	http.HandleFunc("/q", queryServer)
+	http.HandleFunc("/meme", meme)
+	http.HandleFunc("/⬆", meme)
+	http.HandleFunc("/unmeme", unmeme)
+	http.HandleFunc("/⬇", unmeme)
 	http.Handle("/", http.FileServer(http.Dir("static")))
 	err := http.ListenAndServe(*host+":"+strconv.Itoa(*port), nil)
 	if err != nil {

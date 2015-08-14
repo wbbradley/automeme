@@ -88,11 +88,29 @@ $(function () {
     }
 
     function memeImage(elt) {
-      console.log("memeImage()");
+      var xhr = $.ajax({
+        type: 'POST',
+        url: "/⬆",
+        data: {
+          url: $(elt).parents('.image-container').find('.image img').attr('src'),
+        },
+      });
+      xhr.done(function() {
+        console.log("Memed successfully");
+      });
     }
 
     function unmemeImage(elt) {
-      console.log("unmemeImage()");
+      var xhr = $.ajax({
+        type: 'POST',
+        url: "/⬇",
+        data: {
+          url: $(elt).parents('.image-container').find('.image img').attr('src'),
+        },
+      });
+      xhr.done(function() {
+        console.log("Unmemed successfully");
+      });
     }
 
     var actionMap = {
