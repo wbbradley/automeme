@@ -21,6 +21,10 @@ func TestMemoryStorage(t *testing.T) {
 
 	imageRanks = ms.GetImageRanks("me")
 	assert.Equal(t, len(imageRanks), 1, "Unmeme removes an image from the list.")
+
+	/* don't crash */
+	ms.Unmeme("me-bad", "http://foo.bar/z.gif")
+	ms.Unmeme("me-bad", "http://foo.bar/z2.gif")
 }
 
 func TestMemeFactor(t *testing.T) {
