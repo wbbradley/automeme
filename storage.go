@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -75,4 +76,19 @@ func (ms *MemoryStorage) Unmeme(userId UserId, imageUrl ImageURL) {
 
 func (mi *MemoryImage) computeScore() {
 	mi.score = 123
+}
+
+func calculateMemeFactor(ups int, downs int, timestamp float64) float64 {
+	s := ups - downs
+	order := math.Log10(math.Max(math.Abs(float64(s)), 1))
+	var sign int
+	if s > 0 {
+		sign = 1
+	} else if s < 0 {
+		sign = -1
+	} else {
+		sign = 0
+	}
+	seconds := timestamp - 1134028003
+	return float64(sign)*order + seconds/45000.0
 }
