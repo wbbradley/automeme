@@ -24,7 +24,7 @@ func TestMemoryStorage(t *testing.T) {
 }
 
 func TestMemeFactor(t *testing.T) {
-	assert.True(t, calculateMemeFactor(2, 0, 1134028003) > calculateMemeFactor(1, 0, 1134028003), "math")
-	assert.True(t, calculateMemeFactor(3, 0, 1134028003) > calculateMemeFactor(1, 0, 1134028003), "math")
-	assert.True(t, calculateMemeFactor(300, 0, 1134028003) < calculateMemeFactor(1, 0, 1144028003), "math")
+	assert.True(t, calculateMemeFactor(2, 1134028003) > calculateMemeFactor(1, 1134028003), "math")
+	assert.True(t, calculateMemeFactor(3, 1134028003) > calculateMemeFactor(1, 1134028003), "math")
+	assert.True(t, calculateMemeFactor(300, 1134028003) < calculateMemeFactor(1, 1144028003), "math")
 }

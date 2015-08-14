@@ -75,16 +75,19 @@ func (ms *MemoryStorage) Unmeme(userId UserId, imageUrl ImageURL) {
 }
 
 func (mi *MemoryImage) computeScore() {
-	mi.score = 123
+	netMemes := 0
+	for _, userScore := range mi.userMemes {
+		netMemes += userScore
+	}
+	mi.score = calculateMemeFactor(netMemes, float64(mi.timestamp))
 }
 
-func calculateMemeFactor(ups int, downs int, timestamp float64) float64 {
-	s := ups - downs
-	order := math.Log10(math.Max(math.Abs(float64(s)), 1))
+func calculateMemeFactor(netMemes int, timestamp float64) float64 {
+	order := math.Log10(math.Max(math.Abs(float64(netMemes)), 1))
 	var sign int
-	if s > 0 {
+	if netMemes > 0 {
 		sign = 1
-	} else if s < 0 {
+	} else if netMemes < 0 {
 		sign = -1
 	} else {
 		sign = 0
