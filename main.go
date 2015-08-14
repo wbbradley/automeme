@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -11,8 +12,9 @@ import (
 )
 
 var (
-	host = flag.String("host", "", "Specify the server host to listen on")
-	port = flag.Int("port", 8001, "Specify the server port to listen on")
+	host        = flag.String("host", "", "Specify the server host to listen on")
+	port        = flag.Int("port", 8001, "Specify the server port to listen on")
+	memeStorage = newMemoryStorage()
 )
 
 func queryServer(w http.ResponseWriter, req *http.Request) {
@@ -101,14 +103,31 @@ func queryServerGet(w http.ResponseWriter, req *http.Request) {
 	close(responses)
 }
 
+type memePacket struct {
+	Url ImageURL
+}
+
+type MemeAction func(UserId, ImageURL)
+
 func meme(w http.ResponseWriter, req *http.Request) {
-	fmt.Println("meming")
-	w.WriteHeader(200)
+	handleMemeAction(w, req, memeStorage.Meme)
 }
 
 func unmeme(w http.ResponseWriter, req *http.Request) {
-	fmt.Println("unmeming")
-	w.WriteHeader(200)
+	handleMemeAction(w, req, memeStorage.Unmeme)
+}
+
+func handleMemeAction(w http.ResponseWriter, req *http.Request, memeAction MemeAction) {
+	decoder := json.NewDecoder(req.Body)
+	var t memePacket
+	err := decoder.Decode(&t)
+	if err == nil {
+		w.WriteHeader(200)
+		memeAction("me", t.Url)
+	} else {
+		w.WriteHeader(400)
+		fmt.Println(err)
+	}
 }
 
 func main() {
