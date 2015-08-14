@@ -130,6 +130,35 @@ func handleMemeAction(w http.ResponseWriter, req *http.Request, memeAction MemeA
 	}
 }
 
+type imageRankPacket struct {
+	Url   ImageURL `json:"url"`
+	Score float64  `json:"score"`
+}
+
+type imageRanksPacket struct {
+	ImageRanks []imageRankPacket `json:"imageRanks"`
+}
+
+func memes(w http.ResponseWriter, req *http.Request) {
+	imageRanks := memeStorage.GetImageRanks()
+	packet := new(imageRanksPacket)
+	packet.ImageRanks = make([]imageRankPacket, 0)
+
+	w.Header().Set("Content-Type", "application/json")
+
+	for _, imageRank := range imageRanks {
+		packet.ImageRanks = append(
+			packet.ImageRanks,
+			imageRankPacket{
+				imageRank.ImageUrl,
+				imageRank.Score,
+			})
+	}
+
+	encoder := json.NewEncoder(w)
+	encoder.Encode(&packet)
+}
+
 func main() {
 	flag.Parse()
 
@@ -138,6 +167,8 @@ func main() {
 	http.HandleFunc("/⬆", meme)
 	http.HandleFunc("/unmeme", unmeme)
 	http.HandleFunc("/⬇", unmeme)
+	http.HandleFunc("/memes", memes)
+	http.HandleFunc("/☛", memes)
 	http.Handle("/", http.FileServer(http.Dir("static")))
 	err := http.ListenAndServe(*host+":"+strconv.Itoa(*port), nil)
 	if err != nil {

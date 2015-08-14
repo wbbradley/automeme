@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"time"
 )
@@ -10,12 +9,12 @@ type UserId string
 type ImageURL string
 
 type ImageRank struct {
-	imageUrl ImageURL
-	score    float64
+	ImageUrl ImageURL
+	Score    float64
 }
 
 type Storage interface {
-	GetImageRanks(userId UserId) []ImageRank
+	GetImageRanks() []ImageRank
 	Meme(userId UserId, imageUrl ImageURL)
 	Unmeme(userId UserId, imageUrl ImageURL)
 }
@@ -37,7 +36,7 @@ func newMemoryStorage() Storage {
 	}
 }
 
-func (ms MemoryStorage) GetImageRanks(userId UserId) []ImageRank {
+func (ms MemoryStorage) GetImageRanks() []ImageRank {
 	imageRanks := make([]ImageRank, 0)
 	for url, memoryImage := range ms.imagesByUrl {
 		imageRanks = append(imageRanks, ImageRank{
@@ -49,10 +48,8 @@ func (ms MemoryStorage) GetImageRanks(userId UserId) []ImageRank {
 }
 
 func (ms *MemoryStorage) Meme(userId UserId, imageUrl ImageURL) {
-	fmt.Println("meming", imageUrl)
 	memoryImage, ok := ms.imagesByUrl[imageUrl]
 	if !ok {
-		fmt.Println("didn't find", imageUrl, ", so we're adding it")
 		now := time.Now()
 		memoryImage = &MemoryImage{
 			imageUrl,
@@ -63,17 +60,13 @@ func (ms *MemoryStorage) Meme(userId UserId, imageUrl ImageURL) {
 		ms.imagesByUrl[imageUrl] = memoryImage
 	}
 
-	fmt.Println("found", imageUrl, ", so we're upvoting it")
-
 	memoryImage.userMemes[userId] = 1
 	memoryImage.computeScore()
-	fmt.Println(imageUrl, "now has a score of", memoryImage.score)
 }
 
 func (ms *MemoryStorage) Unmeme(userId UserId, imageUrl ImageURL) {
 	memoryImage, ok := ms.imagesByUrl[imageUrl]
 	if ok {
-		fmt.Println("deleting ", imageUrl)
 		delete(memoryImage.userMemes, userId)
 		memoryImage.computeScore()
 	}
